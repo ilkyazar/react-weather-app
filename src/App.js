@@ -18,6 +18,8 @@ class App extends React.Component {
             temp_max: undefined,
             temp_min: undefined,
             description: "",
+            humidity: undefined,
+            wind: undefined,
             error: false
         };
 
@@ -35,6 +37,11 @@ class App extends React.Component {
     convertToCelsius(t) {
         let c = Math.floor(t - 273.15);
         return c;
+    }
+
+    convertTokmh(mts) {
+        let kmh = mts * 3.6;
+        return kmh;
     }
 
     getWeatherIcon(icons, rangeId) {
@@ -69,28 +76,48 @@ class App extends React.Component {
 
         e.preventDefault();
 
-        const api_call = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=London,uk&appid=${constants.API_KEY}`);
+        const city = e.target.elements.city.value;
+        const country = e.target.elements.country.value;
+
+        if (city && country) {
+            const api_call = await fetch(
+                `http://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${constants.API_KEY}`
+                );
     
-        const response = await api_call.json();
+            const response = await api_call.json();
 
-        console.log(response);
+            console.log(response);
 
-        this.setState({
-            city : response.name,
-            country : response.sys.country,
-            temp_celsius : this.convertToCelsius(response.main.temp),
-            temp_min : this.convertToCelsius(response.main.temp_min),
-            temp_max : this.convertToCelsius(response.main.temp_max),
-            description : response.weather[0].description,
-        })
+            if (response.name) {
+                this.setState({
+                    city : `${response.name}, ${response.sys.country}`,
+                    temp_celsius : this.convertToCelsius(response.main.temp),
+                    temp_min : this.convertToCelsius(response.main.temp_min),
+                    temp_max : this.convertToCelsius(response.main.temp_max),
+                    description : response.weather[0].description,
+                    humidity : response.main.humidity,
+                    wind : this.convertTokmh(response.wind.speed),
+                    error : false,
+                })
+    
+                this.getWeatherIcon(this.weatherIcon, response.weather[0].id);
+            }
+            else {
+                this.setState({error: true});
+            } 
 
-        this.getWeatherIcon(this.weatherIcon, response.weather[0].id);
+        } else {
+                this.setState({error: true});
+        }
     }
 
     render() {
         return(
             <div className="App">
-                <Form loadWeather={this.getWeather}/>
+                <Form 
+                    loadWeather={this.getWeather}
+                    error={this.state.error}
+                />
                 <Weather
                     city={this.state.city}
                     country={this.state.country}
@@ -99,6 +126,8 @@ class App extends React.Component {
                     temp_max={this.state.temp_max}
                     description={this.state.description}
                     weatherIcon={this.state.icon}
+                    humidity={this.state.humidity}
+                    wind={this.state.wind}
                     />
             </div>
         );
