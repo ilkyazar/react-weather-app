@@ -12,6 +12,7 @@ const Weather = (props) => {
                 {showMinMaxTemp(props.temp_min, props.temp_max)}
                 <h4>{props.description}</h4>
                 {showHumidityWind(props.humidity, props.wind)}
+
             </div>
         </div>
     );
@@ -29,13 +30,14 @@ function showMinMaxTemp(min, max) {
 }
 
 function showHumidityWind(hum, wind) {
-    console.log("hum: " + hum + " wind: " + wind);
     if (hum !== undefined & wind !== undefined) {
         return (
-            <h3>
-                <span className="pz-8">{hum}%</span>
-                <span className="pz-8">{wind}%</span>
-            </h3>
+            <div>
+                <h6>
+                    <span className="px-4">{"Humidity: " + hum.toFixed(2)}%</span>
+                    <span className="px-4">{"Wind: " + wind.toFixed(2)} km/h</span>
+                </h6>
+            </div>
         );
     }
 }
